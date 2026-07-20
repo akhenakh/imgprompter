@@ -1,0 +1,4 @@
+charm.land/catwalk v0.49.28 h1:JgrSviaAo7ghp9dUsL72WfHVNuGT/i+zmIT1trHvzgk=
+charm.land/catwalk v0.49.28/go.mod h1:5xsIaxJYt/wLPh/F3B5PDx1T9FaME0FQbHKr2JjSNm0=
+github.com/charmbracelet/x/etag v0.2.0 h1:Euj1VkheoHfTYA9y+TCwkeXF/hN8Fb9l4LqZl79pt04=
+github.com/charmbracelet/x/etag v0.2.0/go.mod h1:C1B7/bsgvzzxpfu0Rabbd+rTHJa5TmC/qgTseCf6DF0=
