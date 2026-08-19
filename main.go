@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -168,6 +169,15 @@ func isImage(path string) bool {
 	return ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".webp"
 }
 
+// mimeTypeForExt returns the correct MIME type for the image extension.
+func mimeTypeForExt(path string) string {
+	m := mime.TypeByExtension(filepath.Ext(path))
+	if m == "" {
+		return "image/jpeg"
+	}
+	return m
+}
+
 // queryLLM builds the payload and executes the HTTP request
 func queryLLM(p catwalk.Provider, model, prompt, imgPath string, budget int64) (string, string, error) {
 	// Encode image to Base64
@@ -176,7 +186,8 @@ func queryLLM(p catwalk.Provider, model, prompt, imgPath string, budget int64) (
 		return "", "", err
 	}
 	base64Img := base64.StdEncoding.EncodeToString(imgData)
-	dataURL := fmt.Sprintf("data:image/jpeg;base64,%s", base64Img)
+	mimeType := mimeTypeForExt(imgPath)
+	dataURL := fmt.Sprintf("data:%s;base64,%s", mimeType, base64Img)
 
 	// Build the request body
 	reqBody := ChatCompletionRequest{
