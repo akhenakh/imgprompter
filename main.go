@@ -78,11 +78,12 @@ func main() {
 	showThinking := flag.Bool("t", false, "Display thinking on stdout (not saved to file)")
 	skipExisting := flag.Bool("s", false, "Skip processing if the .txt sidecar already exists")
 	keyword := flag.String("k", "", "Keyword to prefix to the model's response (e.g. 'nsfw')")
+	dir := flag.String("d", "", "Directory to recursively search for image files (.jpg, .jpeg, .png, .webp)")
 	flag.Parse()
 
 	// Validation
-	if *promptFile == "" || len(flag.Args()) == 0 {
-		fmt.Println("Usage: catwalk-vision -p prompt.txt [-r level] [-t] [-s] [-k keyword] <image_glob_or_files>")
+	if *promptFile == "" || (*dir == "" && len(flag.Args()) == 0) {
+		fmt.Println("Usage: imgprompter -p prompt.txt [-d directory] [-r level] [-t] [-s] [-k keyword] <image_glob_or_files>")
 		os.Exit(1)
 	}
 
@@ -115,6 +116,21 @@ func main() {
 
 	// Expand globs (e.g., *.jpg) into a flat list of files
 	var files []string
+
+	// Recursively collect image files when a directory is provided
+	if *dir != "" {
+		found, err := collectImages(*dir)
+		if err != nil {
+			fmt.Printf("Error scanning directory %s: %v\n", *dir, err)
+			os.Exit(1)
+		}
+		if len(found) == 0 {
+			fmt.Printf("No image files found in %s\n", *dir)
+			os.Exit(1)
+		}
+		files = append(files, found...)
+	}
+
 	for _, arg := range flag.Args() {
 		matches, err := filepath.Glob(arg)
 		if err != nil || len(matches) == 0 {
@@ -167,6 +183,21 @@ func main() {
 		}
 		fmt.Printf("Result saved to: %s\n", outPath)
 	}
+}
+
+// collectImages recursively walks dir and returns all supported image files
+func collectImages(dir string) ([]string, error) {
+	var images []string
+	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() && isImage(path) {
+			images = append(images, path)
+		}
+		return nil
+	})
+	return images, err
 }
 
 // isImage checks extensions for supported image formats
