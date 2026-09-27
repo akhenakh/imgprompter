@@ -77,11 +77,12 @@ func main() {
 	reasoning := flag.String("r", "off", "Reasoning level: off, low, medium, high, unlimited")
 	showThinking := flag.Bool("t", false, "Display thinking on stdout (not saved to file)")
 	skipExisting := flag.Bool("s", false, "Skip processing if the .txt sidecar already exists")
+	keyword := flag.String("k", "", "Keyword to prefix to the model's response (e.g. 'nsfw')")
 	flag.Parse()
 
 	// Validation
 	if *promptFile == "" || len(flag.Args()) == 0 {
-		fmt.Println("Usage: catwalk-vision -p prompt.txt [-r level] [-t] [-s] <image_glob_or_files>")
+		fmt.Println("Usage: catwalk-vision -p prompt.txt [-r level] [-t] [-s] [-k keyword] <image_glob_or_files>")
 		os.Exit(1)
 	}
 
@@ -152,6 +153,11 @@ func main() {
 		// Print reasoning to terminal if requested (dimmed using ANSI 2)
 		if *showThinking && thinking != "" {
 			fmt.Printf("\033[2m[Thinking]: %s\033[0m\n\n", thinking)
+		}
+
+		// Prefix the keyword to the response before it is written out
+		if *keyword != "" {
+			content = *keyword + ", " + content
 		}
 
 		// Save the final cleaned response to the text file
